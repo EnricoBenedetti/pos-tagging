@@ -1,0 +1,336 @@
+% This must be in the first 5 lines to tell arXiv to use pdfLaTeX, which is strongly recommended.
+\pdfoutput=1
+% In particular, the hyperref package requires pdfLaTeX in order to break URLs across lines.
+
+\documentclass[11pt]{article}
+
+% Remove the "guidelines" option to generate the final version.
+%\usepackage[guidelines]{nlpreport} % show guidelines
+\usepackage[]{nlpreport} % hide guidelines
+
+
+% Standard package includes
+\usepackage{times}
+\usepackage{latexsym}
+
+% For proper rendering and hyphenation of words containing Latin characters (including in bib files)
+\usepackage[T1]{fontenc}
+% For Vietnamese characters
+% \usepackage[T5]{fontenc}
+% See https://www.latex-project.org/help/documentation/encguide.pdf for other character sets
+
+% This assumes your files are encoded as UTF8
+\usepackage[utf8]{inputenc}
+
+% This is not strictly necessary, and may be commented out,
+% but it will improve the layout of the manuscript,
+% and will typically save some space.
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs} % for tables
+
+\usepackage{tabularx,ragged2e,siunitx} % for tables
+
+
+
+% THE pdfinfo Title AND Author ARE NOT NECESSARY, THEY ARE METADATA FOR THE FINAL PDF FILE
+\hypersetup{pdfinfo={
+Title={Assignment 1},
+Author={Elisa Ancarani \& Enrico Benedetti \& Stefano Fantazzini \& Irene Gentilini}
+}}
+%\setcounter{secnumdepth}{0}  
+ \begin{document}
+%
+\title{POS tagging implementation and result analysis using four RNN architectures\\
+\explanation{\rm Substitute the $\uparrow$ title $\uparrow$ with your project's title, or with Assignment 1 / 2\\ \smallskip}
+% subtitle:
+\large \explanation{\rm $\downarrow$ Keep only one of the following three  labels  / leave empty for assignments: $\downarrow$\\}
+%NLP Course Project | 
+%3-cfu Project Work | 
+%NLP Course Project \& Project Work
+}
+\author{Elisa Ancarani,
+Enrico Benedetti,
+Stefano Fantazzini,
+\and
+Irene Gentilini\\
+Master's Degree in Artificial Intelligence, University of Bologna\\
+\{ elisa.ancarani4, enrico.benedetti5, stefano.fantazzini, irene.gentilini2 \}@studio.unibo.it
+}
+
+
+
+
+\maketitle
+
+
+\attention{DO NOT MODIFY THIS TEMPLATE - EXCEPT, OF COURSE FOR TITLE, SUBTITLE AND AUTHORS.\\ IN THE FINAL VERSION, IN THE \LaTeX\ SOURCE REMOVE THE \texttt{guidelines} OPTION FROM  \texttt{$\backslash$usepackage[guidelines]\{nlpreport\}}.
+}
+
+\begin{abstract}
+%\begin{quote}
+\explanation{
+The abstract is very brief summary of your report. Try to keep it no longer than 15-20 lines at most. Write your objective, your approach, and your main observations (what are the findings that make this report worthwhile reading?)}
+
+
+
+%Part of speech tagging (POS) is the process of marking up a word in a text as corresponding to a particular part of speech based on its definition and context. 
+%POS is an important task in the field of Natural Language Processing (NLP), as it can be used to aid other NLP tasks in improving their performance. \\
+%Our objective is to study four Recurrent Neural Networks models to tackle the POS tagging sequence labelling task.
+
+%is to build a model which can accurately classify all the words from a list of sentences as the correct POS.
+%To tackle this task we employed a bidirectional long short term memory model (Bi-LSTM), and then tested some modifications to this architecture.
+
+%Our object is to study Recurrent Neural Network applying also some modification to the basics of the architecture in order to tackle the POS tagging sequence classification problem.
+
+In this work we implement, train and evaluate four variations of Recurrent Neural Network architectures to tackle the part-of-speech (POS) tagging sequence labeling task. Results show that the considered models achieve similar performances, which do not vary significantly with respect to the most frequent tag baseline. 
+
+
+%\end{quote}
+\end{abstract}
+
+\attention{\textcolor{red}{NOTICE: THIS REPORT'S LENGTH MUST RESPECT THE FOLLOWING PAGE LIMITS: \begin{itemize}
+    \item ASSIGNMENT: \textbf{2 PAGES} 
+    \item NLP PROJECT OR PROJECT WORK: \textbf{8 PAGES}
+    \item COMBINED NLP PROJECT + PW: \textbf{12 PAGES}
+\end{itemize}  PLUS LINKS, REFERENCES AND APPENDICES.\\ 
+THIS MEANS THAT YOU CANNOT FILL ALL SECTIONS TO MAXIMUM LENGTH. IT ALSO MEANS THAT, QUITE POSSIBLY, YOU WILL HAVE TO LEAVE OUT OF THE REPORT PART OF THE WORK YOU HAVE DONE OR OBSERVATIONS YOU HAVE. THIS IS NORMAL: THE REPORT SHOULD EMPHASIZE WHAT IS MOST SIGNIFICANT, NOTEWORTHY, AND REFER TO THE NOTEBOOK FOR ANYTHING ELSE.\\ 
+FOR ANY OTHER ASPECT OF YOUR WORK THAT YOU WOULD LIKE TO EMPHASIZE BUT CANNOT EXPLAIN HERE FOR LACK OF SPACE, FEEL FREE TO ADD COMMENTS IN THE NOTEBOOK.\\ 
+INTERESTING TEXT EXAMPLES THAT EXCEED THE MAXIMUM LENGTH OF THE REPORT CAN BE PLACED IN A DEDICATED APPENDIX AFTER THE REFERENCES.}}
+
+
+\section{Introduction}
+\label{sec:introduction}
+The most common approach for part of speech (POS) tagging is to use neural networks, along with machine learning and hybrid approaches. The Hidden Markov Model is the most used machine learning algorithm for POS tagging, regardless of the Conditional Random Field method outperforming it. However, deep learning algorithms are vastly more common, because of their efficiency in learning from large-size corpora of text. In particular, Recurrent Neural Networks (RNN) such as the ones we evaluated, are preferred \cite{metareview}.\\
+In this paper we tested four different Recurrent Neural Network (RNN) architectures. Our initial baseline architecture is a bidirectional LSTM. We also experimented with a Gated Recurrent Unit (GRU) layer instead of the BiLSTM one, as well as adding an additional BiLSTM layer, and adding a fully connected layer (FC), in three separate models.\\
+The training, validation and test sets were built using the Penn Treebank WSJ dataset \cite{penntreebank}. This dataset is a text corpus containing a set of sentences, divided into 199 separate files. Each file is made up of rows, each containing a token (word, symbol or punctuation mark) followed by the tag of the part of speech it belongs to. Each entry in our datasets consisted of the token, the tag, and the file and sentence they were taken from.
+\attention{MAX 1 COLUMN FOR ASSIGNMENT REPORTS / 2 COLUMNS FOR PROJECT OR PW / 3 FOR COMBINED REPORTS.}
+
+\explanation{
+The Introduction is an executive summary, which you can think of as an extended abstract.  Start by writing a brief description of the problem you are tackling and why it is important. (Skip it if this is an assignment report).} 
+
+\explanation{Then give a short overview of known/standard/possible approaches to that problems, if any, and what are their advantages/limitations.} 
+
+\explanation{After that, discuss your approach, and motivate why you follow that approach. If you are drawing inspiration from an existing model, study, paper, textbook example, challenge, \dots, be sure to add all the necessary references~\cite{DBLP:journals/corr/abs-2204-02311,DBLP:conf/acl/LorenzoMN22,DBLP:conf/clef/AnticiBIIGR21,DBLP:conf/ijcai/NakovCHAEBPSM21,DBLP:conf/naacl/RottgerVHP22,DBLP:journals/toit/LippiT16}.\footnote{\href{https://en.wikipedia.org/wiki/The_Muppet_Show}{Add only what is relevant.}}}
+
+\explanation{Next, give a brief summary of your experimental setup: how many experiments did you run on which dataset. Last, make a list of the main results or take-home lessons from your work.}
+
+\attention{HERE AND EVERYWHERE ELSE: ALWAYS KEEP IN MIND THAT, CRUCIALLY, WHATEVER TEXT/CODE/FIGURES/IDEAS/... YOU TAKE FROM ELSEWHERE MUST BE CLEARLY IDENTIFIED AND PROPERLY REFERENCED IN THE REPORT.}
+
+%\section{Background}
+%\label{sec:background}
+%\attention{MAX 2 COLUMNS (3 FOR COMBINED REPORTS). DO NOT INCLUDE SECTION IF NO BACKGROUND NECESSARY. OMIT SECTION IN ASSIGNMENT REPORTS.}
+
+\explanation{The Background section is where you briefly provide whatever background information on the domain or challenge you're addressing and/or on the techniques/approaches you're using, that (1) you think is necessary for the reader to understand your work and design choices, and (2) is not something that has been explained to you during the NLP course (to be clear: do NOT repeat explanations of things seen in class, we already know that stuff). If you adapt paragraphs from articles, books, online resources, etc: be sure to clarify which parts are yours and which ones aren't.}
+
+\section{System description}
+\label{sec:system}
+We have implemented, using the PyTorch framework \cite{paszke2017automatic}, four recurrent neural network models to experiment with. Their structure comes from the assigment directions provided to us.
+We defined those model classes from scratch using the PyTorch API. 
+
+We prepared functions to aggregate the word tokens into padded input sequences. Each sequence corresponds to a sentence from the dataset. Then, multiple sequences are put into mini-batches, where padding is added to achieve uniform length. The training and evaluation loops were adapted from tutorials on the PyTorch website. 
+
+
+%The four models are \textcolor{orange}{(pictures)}:
+%\begin{itemize}
+%\itemsep-0.3em
+%    \item a bidirectional LSTM RNN followed by a dense layer.
+%    \item a bidirectional GRU RNN followed by a dense layer.
+%    \item a bidirectional two-layer LSTM followed by a dense layer.
+%   \item a bidirectional LSTM followed by two dense layers.
+%\end{itemize}
+%The base model architecture was
+%    \item a bidirectional LSTM RNN followed by a dense layer.
+%    \item a bidirectional GRU RNN followed by a dense layer.
+%    \item a bidirectional two-layer LSTM followed by a dense layer.
+%   \item a bidirectional LSTM followed by two dense layers.
+
+
+The four model architectures contain, in addition to the required layers, an embedding layer. Its weights are the vector embeddings from the GloVe \cite{pennington2014glove} vocabulary, which are frozen during training. Hyper-parameter tuning was implemented using the Ray Tune library \cite{liaw2018tune}.
+
+To facilitate analysis of results, the best model weights from each architecture type were saved, along with their training history.
+
+\attention{MAX 1 COLUMN FOR ASSIGNMENT REPORTS / 4 COLUMNS FOR PROJECT OR PW / 6 FOR COMBINED REPORTS.}
+
+\explanation{
+Describe the system or systems you have implemented (architectures, pipelines, etc), and used to run your experiments. If you reuse parts of code written by others, be sure to make very clear your original contribution in terms of
+\begin{itemize}
+    \item architecture: is the architecture your design or did you take it from somewhere else
+    \item coding: which parts of code are original or heavily adapted? adapted from existing sources? taken from external sources with minimal adaptations?
+\end{itemize}
+It is a good idea to add figures to illustrate your pipeline and/or architecture(s)
+%(see Figure~\ref{fig:architecture})
+%
+%\begin{figure*}
+%    \centering
+%    \includegraphics[width=\textwidth]{img/architecture.pdf}
+%    \caption{Model architecture}
+%    \label{fig:architecture}
+%\end{figure*}
+}
+
+\begin{table}[htb]
+\caption{Layer sequences of the four models (from top to bottom). The input dimension is a one-hot encoded tensor which identifies the input token. The output consists of one activation for each POS to predict. All recurrent layers are bidirectional.}
+\label{tab:baselinearch}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{c*{3}{|>{}c<{}}}
+    \textbf{Baseline} & \textbf{GRU}&\textbf{Additional BiLSTM}  &\textbf{Additional FC}\\\hline
+    Embedding  & Embedding  & Embedding   & Embedding  \\\hline
+    LSTM       & GRU        & LSTM (2 layers)        & LSTM      \\\hline
+    FC         & FC         & FC        & FC (2 layers)  
+\end{tabular}
+}
+
+\end{table}
+
+
+%\section{Data}
+%\label{sec:data}
+%\attention{MAX 2 COLUMNS / 3 FOR COMBINED REPORTS. OMIT SECTION IN ASSIGNMENT REPORTS.}
+
+\explanation{Provide a brief description of your data including some statistics and pointers (references to articles/URLs) to be used to obtain the data. Describe any pre-processing work you did. Links to datasets must be placed later in Section~\ref{sec:links}.}
+
+\section{Experimental setup and results}
+\label{sec:results}
+We set up a pipeline where we trained each of the four models extensively, for up to $15$ epochs. We use a borrowed Early Stopper object to end training early in case the validation loss does not decrease by a significant amount ($10^{-2}$, which was chosen empirically after monitoring some early training experiments). 
+
+We performed a grid search over the $\alpha$ hyper-parameter, which determines the hidden layer dimension. The formula we used is based on \cite{hidden_dim_func}:
+$$N_h = \frac{N_s}{(\alpha * (N_i + N_o))},$$ where $N_s$ is the number of samples in the training set, $\alpha$ is the scaling factor, $N_i$ is the number of input neurons to the RNN (the GloVe embedding dimension, $100$) , $N_o$ is the number of output neurons (the total number of classes, $45$).
+
+The other hyper-parameters tuned were the training batch size and the Adam Optimizer learning rate. 
+The parameter combinations we tried in our experiments are outlined in Table \ref{tab:hyperpars}. %Mainly, multiple values for the training batch size, and the hidden layer dimensions, using the formula [add it] were used. The other parameter value explored was the optimizer learning rate. \textcolor{orange}{(already said earlier?)}
+
+All our tested architectures optimized the same loss, multiclass crossentropy.
+The metrics considered were categorical accuracy for training and validation, and macro F1 for the evaluation on test data.
+
+
+\begin{table}[htb]
+\caption{Hyper-parameters combinations and best configuration for each model.}
+\label{tab:hyperpars}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{c*{5}{|>{}c<{}}}
+    \textbf{Name}  & \textbf{Values}   & \textbf{Baseline}   & \textbf{Gru} & \textbf{Additional fc} & \textbf{Additional lstm}      \\\hline
+    $\alpha$ & $1$,$2$,$10$ & 1 & 1 & 1 & 1 \\\hline
+    batch size & $1$,$16$,$128$ & 16 & 16 & 16 & 16      \\\hline
+    learning rate & $10^{-3}$, $3\cdot10^{-3}$ & 0.03 & 0.03 & 0.03 & 0.03
+\end{tabular}
+}
+
+\end{table}
+
+All the results for the best configuration for each architecture are outlined in Table ~\ref{tab:results}. 
+
+After training, the model parameters were recovered from a checkpoint so that the metrics were computed on the best epoch, based on validation accuracy. The table also contains the metrics from the most frequent class baseline, obtained by counting the word-tag frequencies in the training set.
+
+\begin{table}[htb]
+\caption{Total number of training epochs and validation accuracy for each architecture, and macro F1 scores for the two best models (selected based on val. accuracy).}
+\label{tab:results}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{c*{3}{|>{}c<{}}}
+    \textbf{Name}  & \textbf{\# Epochs} & \textbf{Val. accuracy}   & \textbf{Test macro F1}   \\\hline
+    Baseline & 8 & 0.823 & {\textemdash} \\\hline
+    GRU & 8 & 0.817 & {\textemdash}     \\\hline
+    Additional BiLSTM & 6 & {\bfseries 0.834} & 0.68    \\\hline
+    Additional FC & 6 & {\bfseries 0.831} & 0.69 \\\hline
+    Most freq. class baseline & {\textemdash} & 0.82 (test set) & 0.70
+\end{tabular}
+}
+
+\end{table}
+
+
+
+\attention{MAX 1 COLUMN FOR ASSIGNMENT REPORTS / 3 COLUMNS FOR PROJECT OR PW / 5 FOR COMBINED REPORTS.}
+
+\explanation{
+
+Describe how you set up your experiments: which architectures/configurations you used, which hyper-parameters and what methods used to set them, which optimizers, metrics, etc.
+\\
+Then, \textbf{use tables} to summarize your your findings (numerical results) in validation and test. If you don't have experience with tables in \LaTeX, you might want to use \href{https://www.tablesgenerator.com/}{\LaTeX table generator} to quickly create a table template.
+}
+
+
+\section{Discussion}
+\label{sec:discussion}
+\attention{MAX 1.5 COLUMNS FOR ASSIGNMENT REPORTS / 3 COLUMNS FOR PROJECT / 4 FOR COMBINED REPORTS. ADDITIONAL EXAMPLES COULD BE PLACED IN AN APPENDIX AFTER THE REFERENCES IF THEY DO NOT FIT HERE.}
+
+
+\explanation{
+Here you should make your analysis of the results you obtained in your experiments. Your discussion should be structured in two parts: 
+\begin{itemize}
+    \item discussion of quantitative results (based on the metrics you have identified earlier; compare with baselines);
+    \item error analysis: show some examples of odd/wrong/unwanted  outputs; reason about why you are getting those results, elaborate on what could/should be changed in future developments of this work.
+\end{itemize}
+}
+
+%The results in terms of accuracy are not that much different from the frequency baseline. The results seem to be better with a lower 
+%$\alpha$ value. 
+
+
+%sing a bigger glove embedding results in getting a better accuracy, as well as a higher resource usage. Therefore a good trade-off is to use an embedding dimension of $100$, which performs better than $50$ in terms of accuracy, and than a dimension of $200$ or $300$ in terms of memory usage. When using randomly sampled embeddings for the out-of-vocabulary words, the results are not significantly different than using all-zeros tensors, as the best performing models' accuracy values differ only by approximately $0.001$)
+
+%ELISA PART%
+%The bigger the size of the GloVe embedding, the better the accuracy as well as the higher the memory usage. We found out that a good trade-off in term of accuracy and use of resources is to use an embedding dimension equal to $100$.
+%Results arising from the implementation of all-zeros tensors embeddings of the out-of vocabulary words are very close to the results of the randomly sampled ones, as the best accuracy value differs only by about $0.001$ in favour of the latter. On the other hand, the f1-score of the best model that uses all-zeros tensors exceeds by $0.02$ the f1-score of the best model that implements the randomly sampled embeddings.
+%shorter version
+The results for the experiments with randomly sampled versus $0$ vector embeddings for out of vocabulary words are similar, as the first method has only marginally better accuracy but slightly lower F1 score than the second. The absence of a clear winner may be because the number of tokens without a GloVe embedding is relatively small compared to that of the rest of the tokens in the dataset.
+%if we consider the f1-score, the result of the best model that uses all-zero tensors are slightly better as exceeds  the result of the best model that uses all-zero tensors exceeds by $0.02$ the result of the best model that implements the randomly sampled embeddings.
+
+In all the experiments, the results seem to be better with a smaller $\alpha$ value, which corresponds to a larger hidden layer dimension. In addition, by comparing our models with the most frequent tag baseline it turns out that, overall, the results are very similar. %Indeed, both using randomly sampled and all-zeros tensors embedding the best architecture is the BiLSTML one and the performance in term of accuracy exceeds of $0.01$ the accuracy of the most frequent class baseline.
+%SHOW THE DIFFERENCE
+
+
+%error analysis start
+By looking at the per-tag metrics, excluding punctuation and symbols, we noticed that all the considered models predicted some classes better than others. Another observation is that our models confuse tags that have similar functions.
+%Error analysis (most easy classes = closed class (like propositions and fixed function words), 
+%hard classes (open class types = RBR(confused with jjr=comparative adjective/S = comparative and superlative adverbs, %NNPS=proper noun, plu. gets confused with proper noun singular
+
+In linguistics, a class of words can be categorized as open or closed. An open class commonly accepts new words, whereas a closed class rarely does.
+It was observed that words that belong to the closed class like prepositions, determiners, conjunctions, and pronouns, are identified with near-perfect F1 ($\geq 97\%$).
+The tags that confuse models the most are part of the open class. The models also mislabel parts of speech that are similar. For example, comparative adverbs as comparative adjectives, superlative adverbs as superlative adjectives, or plural proper nouns as singular proper nouns.
+
+It should be noted that the per-token metrics can only go so far. Per-sentence accuracy gets quite low, even for the current state-of-the-art techniques (around $56\%$) \cite{postaggers-sot}. The work of Manning on the same dataset highlights more in depth some possible causes of tag prediction error.
+%error analysis end
+
+In future developments, more work on the data could be done, for instance by removing punctuation also at traning time, and applying different preprocessing to the input tokens.
+The best model could be expanded with more layers, or the number of parameters could be changed. The training recipe could be improved by employing additional regularization techniques like weight decay and dropout. More extensive tuning should be considered. Covering a larger range of hyper-parameters values could improve performance at the cost of time and computation during search.
+
+\section{Conclusion}
+\label{sec:conclusion}
+\attention{MAX 1 COLUMN.}
+
+\explanation{
+In one or two paragraphs, recap your work and main results.
+What did you observe? 
+Did all go according to expectations? 
+Was there anything surprising or worthwhile mentioning?
+After that, discuss the main limitations of the solution you have implemented, and indicate promising directions for future improvement.
+}
+
+The most common approach when tackling the POS tagging problem is to use RNNs. We tested four of them, and regardless of their differences their performance was similar, with a mild improvement occurring when using additional layers, whether recurrent or dense ones. Surprisingly, the result of the best two models was virtually the same as that of the most frequent class baseline, showing that a statistical machine learning model can work just as well as a simple recurrent neural network. All our models produced a validation accuracy smaller than the training accuracy, and that could be due to the size of the neural network and the lack of dropout layers. In the future the network could be expanded, and the data could be preprocessed differently.
+
+
+%\section{Links to external resources}
+\label{sec:links}
+\attention{THIS SECTION IS OPTIONAL}
+\explanation{
+Insert here:
+\begin{itemize}
+    \item a link to your GitHub or any other public repo where one can find your code (only if you did not submit your code on Virtuale); 
+    \item a link to your dataset (only for non-standard projects or project works).
+\end{itemize}
+}
+
+\attention{DO NOT INSERT CODE IN THIS REPORT}
+
+%\bibliographystyle{IEEEtran}
+
+\bibliography{nlpreport}
+
+\end{document}
